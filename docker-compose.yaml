@@ -1,7 +1,41 @@
-version: '3.7'
+version: '3'
 
 services:
-
+  mysqla:
+    image: mysql:8.0      
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: currency
+      MYSQL_USER: ankit
+      MYSQL_PASSWORD: ankit123
+    volumes:
+      - mysql_data:/var/lib/mysql 
+    ports:
+      - "3306:3306"
+    networks:
+      - currency-network 
+      
+  identity:
+    image: negiankit705/microservices-idenity:0.0.1-SECURITY
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - currency-network
+    depends_on:
+      - mysqla
+      - naming-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      EUREKA.CLIENT.FETCHREGISTRY: "true"
+      MANAGEMENT.ZIPKIN.TRACING.ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqla:3306/currency
+      SPRING_DATASOURCE_USERNAME: ankit
+      SPRING_DATASOURCE_PASSWORD: ankit123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+    restart: always  
+      
   currency-exchange:
     image: negiankit705/microservices-currency-exchange-service:0.0.1-SNAPSHOT
     mem_limit: 700m
@@ -10,6 +44,7 @@ services:
     networks:
       - currency-network
     depends_on:
+      - mysqla
       - naming-server
     environment:
       EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
@@ -24,6 +59,7 @@ services:
     networks:
       - currency-network
     depends_on:
+      - mysqla
       - naming-server
     environment:
       EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka 
@@ -31,13 +67,14 @@ services:
       MANAGEMENT.ZIPKIN.TRACING.ENDPOINT: http://zipkin-server:9411/api/v2/spans
 
   api-gateway:
-    image: negiankit705/microservices-api-gateway:0.0.1-SNAPSHOT
+    image: negiankit705/microservices-api-gateway:0.0.1-SECURITY
     mem_limit: 700m
     ports:
       - "8765:8765"
     networks:
       - currency-network
     depends_on:
+      - mysqla
       - naming-server
     environment:
       EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
@@ -65,3 +102,6 @@ services:
       
 networks:
   currency-network:
+
+volumes:
+  mysql_data:

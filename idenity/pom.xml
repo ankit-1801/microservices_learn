@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.microservices</groupId>
 	<artifactId>idenity</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SECURITY</version>
 	<name>idenity</name>
 	<description>Demo project for Spring Boot security</description>
 	<url />
@@ -121,6 +121,11 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+				    <image>
+						<name>
+							negiankit705/microservices-${project.artifactId}:${project.version}</name>
+					</image>
+					<pullPolicy>IF_NOT_PRESENT</pullPolicy>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
